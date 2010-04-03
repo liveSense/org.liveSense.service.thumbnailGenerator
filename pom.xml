@@ -100,27 +100,9 @@
         </dependency>
         <dependency>
             <groupId>org.apache.sling</groupId>
-            <artifactId>org.apache.sling.api</artifactId>
-            <version>2.0.9-SNAPSHOT</version>
+            <artifactId>org.apache.sling.commons.log</artifactId>
+            <version>2.0.7-SNAPSHOT</version>
             <type>bundle</type>
-        </dependency>
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.compendium</artifactId>
-            <version>4.2.0</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.4.0</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-            <version>2.5</version>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.liveSense</groupId>
@@ -140,9 +122,15 @@
             <version>2.0.235</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.compendium</artifactId>
+            <version>4.2.0</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 	<profiles>
-				<profile>
+		<profile>
 			<id>git-push</id>
 			<build>
 				<plugins>
@@ -198,6 +186,8 @@
 		</profile>
 	</profiles>
 </project>
+
+
 
 
 
