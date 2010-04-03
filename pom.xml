@@ -23,7 +23,7 @@
     <groupId>org.liveSense</groupId>
     <artifactId>org.liveSense.observer.thumbnailgenerator</artifactId>
     <packaging>bundle</packaging>
-    <version>1.0.0</version>
+    <version>1.0.0-SNAPSHOT</version>
     <name>liveSense Thumbnail generator service</name>
     <description>liveSense Thumbnail generator service and observer</description>
 
@@ -94,13 +94,6 @@
     <dependencies>
         <dependency>
             <groupId>org.apache.sling</groupId>
-            <artifactId>org.apache.sling.jcr.api</artifactId>
-            <version>2.0.2-incubator</version>
-			<scope>provided</scope>
-            <type>bundle</type>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.commons.log</artifactId>
             <version>2.0.7-SNAPSHOT</version>
 			<scope>provided</scope>
@@ -132,6 +125,20 @@
             <version>4.2.0</version>
 			<scope>provided</scope>
 			<type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>javax.jcr</groupId>
+            <artifactId>jcr</artifactId>
+            <version>2.0</version>
+			<scope>provided</scope>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.sling</groupId>
+            <artifactId>org.apache.sling.jcr.api</artifactId>
+            <version>2.0.7-SNAPSHOT</version>
+			<scope>provided</scope>
+			<type>bundle</type>
         </dependency>
     </dependencies>
 	<profiles>
@@ -191,6 +198,8 @@
 		</profile>
 	</profiles>
 </project>
+
+
 
 
 
