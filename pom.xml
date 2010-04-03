@@ -77,7 +77,7 @@
                     <instructions>
 
                         <Export-Package>
-                            org.liveSense.service.thumbnailGenerator.*
+                            org.liveSense.service.thumbnailGenerator.*;version=${pom.version}
                         </Export-Package>
 
                         <Embed-Dependency>
