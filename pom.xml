@@ -102,7 +102,7 @@
         <dependency>
             <groupId>org.liveSense</groupId>
             <artifactId>org.liveSense.utils</artifactId>
-            <version>1.0.2</version>
+            <version>1.0.0-SNAPSHOT</version>
 			<scope>provided</scope>
 			<type>bundle</type>
         </dependency>
@@ -122,7 +122,7 @@
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.compendium</artifactId>
-            <version>4.2.0</version>
+            <version>4.1.0</version>
 			<scope>provided</scope>
 			<type>jar</type>
         </dependency>
