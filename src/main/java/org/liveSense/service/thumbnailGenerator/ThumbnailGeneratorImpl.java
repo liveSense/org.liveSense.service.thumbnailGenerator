@@ -275,34 +275,43 @@ public class ThumbnailGeneratorImpl extends AdministrativeService implements Thu
     public void createThumbnailsForImage(String parentFolder, String fileName) throws RepositoryException, Exception {
         if (!session.isLive()) session = getAdministrativeSession(repository);
         Node node = session.getRootNode().getNode(parentFolder+"/"+fileName);
-        if (isValidMimeType(node)) {
-            // Scale to a temp file for simplicity
-            log.info("Creating thumbnails for node {}", node.getPath());
+        
+		// File node
+		if (node.hasNode("jcr:content")) {
+			if (isValidMimeType(node)) {
+				// Scale to a temp file for simplicity
+				log.info("Creating thumbnails for node {}", node.getPath());
 
-            for (int i = 0; i < thumbnailResolutions.length; i++) {
-                String[] res = thumbnailResolutions[i].split(",");
-                createThumbnail(node, Integer.parseInt(res[0]), Integer.parseInt(res[1]), "image/jpeg", ".jpg");
-            }
+				for (int i = 0; i < thumbnailResolutions.length; i++) {
+					String[] res = thumbnailResolutions[i].split(",");
+					createThumbnail(node, Integer.parseInt(res[0]), Integer.parseInt(res[1]), "image/jpeg", ".jpg");
+				}
 
-        } else {
-            log.debug("No thumbnail created, not an image file: {} - {}", node.getPath(), node.getNode("jcr:content").getProperty("jcr:mimeType"));
-        }
-        session.save();
+			} else {
+				log.debug("No thumbnail created, not an image file: {} - {}", node.getPath(), node.getNode("jcr:content").getProperty("jcr:mimeType"));
+			}
+			session.save();
+		} else {
+			log.debug("Not a file node: ", node.getPath());
+		}
     }
 
     public void deleteThumbnailsForImage(String parentFolder, String fileName) throws RepositoryException, Exception {
         if (!session.isLive()) session = getAdministrativeSession(repository);
-        Node node = session.getRootNode().getNode(parentFolder);
+       
+		if (session.getRootNode().hasNode(parentFolder)) {
+			Node node = session.getRootNode().getNode(parentFolder);
 
-        Node thumbnailFolder = getThumbnailFolder(node,false);
-        if (thumbnailFolder == null) return;
-        NodeIterator iter = thumbnailFolder.getNodes(fileName+"*");
-        while (iter.hasNext()) {
-            Node rm = iter.nextNode();
-            log.info(" -> Remove thumbnail: "+rm.getName());
-            rm.remove();
-        }
-        session.save();
+			Node thumbnailFolder = getThumbnailFolder(node,false);
+			if (thumbnailFolder == null) return;
+			NodeIterator iter = thumbnailFolder.getNodes(fileName+"*");
+			while (iter.hasNext()) {
+				Node rm = iter.nextNode();
+				log.info(" -> Remove thumbnail: "+rm.getName());
+				rm.remove();
+			}
+	        session.save();
+		}
     }
 
     private void createThumbnail(Node image, int scaleWidth, int scaleHeight, String mimeType, String suffix) throws Exception {
