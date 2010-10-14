@@ -23,7 +23,7 @@
     <groupId>org.liveSense</groupId>
     <artifactId>org.liveSense.observer.thumbnailgenerator</artifactId>
     <packaging>bundle</packaging>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>liveSense Thumbnail generator service</name>
     <description>liveSense Thumbnail generator service and observer</description>
 
@@ -95,21 +95,21 @@
         <dependency>
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.commons.log</artifactId>
-            <version>2.0.7-SNAPSHOT</version>
+            <version>2.0.6</version>
 			<scope>provided</scope>
 			<type>bundle</type>
         </dependency>
         <dependency>
             <groupId>org.liveSense</groupId>
-            <artifactId>org.liveSense.utils</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <artifactId>org.liveSense.core</artifactId>
+            <version>1.0.0</version>
 			<scope>provided</scope>
 			<type>bundle</type>
         </dependency>
         <dependency>
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.commons.osgi</artifactId>
-            <version>2.0.7-SNAPSHOT</version>
+            <version>2.0.6</version>
 			<scope>provided</scope>
 			<type>bundle</type>
         </dependency>
@@ -136,7 +136,7 @@
         <dependency>
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.jcr.api</artifactId>
-            <version>2.1.1-SNAPSHOT</version>
+            <version>2.1.0</version>
             <scope>provided</scope>
             <type>bundle</type>
         </dependency>
