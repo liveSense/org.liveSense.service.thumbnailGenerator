@@ -21,7 +21,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.liveSense</groupId>
-    <artifactId>org.liveSense.observer.thumbnailgenerator</artifactId>
+    <artifactId>org.liveSense.service.thumbnailGenerator</artifactId>
     <packaging>bundle</packaging>
     <version>1.0.0</version>
     <name>liveSense Thumbnail generator service</name>
