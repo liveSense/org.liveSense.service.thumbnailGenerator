@@ -1,0 +1,11 @@
+<thumbnail = 'http://livesense.org/thumbnaill/1.0'>
+<nt  = 'http://www.jcp.org/jcr/nt/1.0'>
+<sling = 'http://sling.apache.org/jcr/sling/1.0'>
+
+[thumbnail:thumbnailFolder] > nt:folder
+
+[thumbnail:thumbnailImage] > nt:file
+	- 'originalNodePath' (String)
+	- 'originalNodeLastModified' (Date)
+	- 'width' (Decimal)
+	- 'height' (Decimal)
