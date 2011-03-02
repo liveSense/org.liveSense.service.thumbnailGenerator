@@ -24,8 +24,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,11 +47,11 @@ import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.commons.osgi.OsgiUtil;
 import org.apache.sling.event.EventUtil;
-import org.apache.sling.event.JobProcessor;
+import org.apache.sling.event.jobs.JobProcessor;
+import org.apache.sling.event.jobs.JobUtil;
 import org.apache.sling.jcr.api.SlingRepository;
 import org.apache.sling.jcr.resource.JcrResourceConstants;
 import org.liveSense.core.AdministrativeService;
-import org.liveSense.core.CircularByteBuffer;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventHandler;
@@ -128,7 +126,7 @@ public class ThumbnailGeneratorJobEventHandler extends AdministrativeService
 
 	public void handleEvent(Event event) {
 		if (EventUtil.isLocal(event)) {
-			EventUtil.processJob(event, this);
+			JobUtil.processJob(event, this);
 		}
 	}
 

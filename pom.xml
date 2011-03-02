@@ -24,8 +24,8 @@
       <version>1-SNAPSHOT</version>
   </parent>
   <scm>
-      <connection>scm:git:git://github.com/liveSense/org.liveSense.service.thumbnailGenerator</connection>
-      <developerConnection>scm:git:git://github.com/liveSense/org.liveSense.service.thumbnailGenerator</developerConnection>
+      <connection>scm:git:git://github.com/liveSense/org.liveSense.service.thumbnailGenerator.git</connection>
+      <developerConnection>scm:git:git://github.com/liveSense/org.liveSense.service.thumbnailGenerator.git</developerConnection>
       <url>https://github.com/liveSense/org.liveSense.service.thumbnailGenerator</url>
   </scm>  
 
