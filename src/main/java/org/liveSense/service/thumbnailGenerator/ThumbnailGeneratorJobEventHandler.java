@@ -60,12 +60,6 @@ import org.slf4j.LoggerFactory;
 
 import com.jhlabs.image.ScaleFilter;
 
-/**
- * 
- * @author Robert Csakany (robson@semmi.se)
- * @created Feb 14, 2010
- */
-
 @Component(label="%thumbnailGeneratorJobEventHandler.name",
         description="%thumbnailGeneratorJobEventHandler.description",
         immediate=true,
@@ -132,6 +126,8 @@ public class ThumbnailGeneratorJobEventHandler extends AdministrativeService
 
 	public boolean process(Event event) {
 		Session session = null;
+		ResourceResolver resourceResolver = null;
+
 		try {
 			String resourcePath = (String) event.getProperty("resourcePath");
 			session = getAdministrativeSession(repository);
@@ -139,12 +135,12 @@ public class ThumbnailGeneratorJobEventHandler extends AdministrativeService
 			Map<String, Object> authInfo = new HashMap<String, Object>();
 			authInfo.put(JcrResourceConstants.AUTHENTICATION_INFO_SESSION,
 					session);
-			ResourceResolver resourceResolver = null;
 			try {
 				resourceResolver = resourceResolverFactory
 						.getResourceResolver(authInfo);
 			} catch (LoginException e) {
 				log.error("Authentication error");
+				return false;
 			}
 
 			Resource res = resourceResolver.getResource(resourcePath);
@@ -170,6 +166,7 @@ public class ThumbnailGeneratorJobEventHandler extends AdministrativeService
 			return false;
 		} finally {
 			try {
+			    	if (resourceResolver != null) resourceResolver.close();
 				releaseAdministrativeSession(session);
 			} catch (RepositoryException e) {
 				log.error("Error on logout administrative session");
@@ -177,7 +174,7 @@ public class ThumbnailGeneratorJobEventHandler extends AdministrativeService
 		}
 	}
 
-	public void createThumbnailsForImage(String path)
+	public boolean createThumbnailsForImage(String path)
 			throws RepositoryException, Exception {
 		Session session = null;
 		try {
@@ -198,7 +195,9 @@ public class ThumbnailGeneratorJobEventHandler extends AdministrativeService
 			}
 
 			Resource res = resourceResolver.getResource(path);
-			Node node = res.adaptTo(Node.class);
+			Node node = null;
+			if (res != null) node = res.adaptTo(Node.class);
+			if (node == null) return false;
 
 			// if thumbnail folder does not exists we generate it
 			if (!node.getParent().hasNode(thumbnailFolder)) {
@@ -269,27 +268,8 @@ public class ThumbnailGeneratorJobEventHandler extends AdministrativeService
 						ImageIO.write(dest, "jpg", outs);
 						outs.flush();
 						outs.close();
-						/*
-						final CircularByteBuffer cbb = new CircularByteBuffer(
-								CircularByteBuffer.INFINITE_SIZE);
-						
-						final PipedInputStream in = new PipedInputStream();
-						final PipedOutputStream out = new PipedOutputStream(in);
-						new Thread(
-							    new Runnable(){
-							      public void run(){
-							    	try {
-										ImageIO.write(dest, "jpg", out);
-									} catch (IOException e) {
-										log.error("IOError: ",e);
-										e.printStackTrace(System.out);
-									}
-							      }
-							    }
-							  ).start();
-						*/
+
 						// Create thumbnail node and set the mandatory properties
-						
 						Node thumbnail = thumbnailFolderNode.addNode(thumbnailName,
 								"thumbnail:thumbnailImage");
 						thumbnail.addNode("jcr:content", "nt:resource").setProperty(
@@ -340,6 +320,8 @@ public class ThumbnailGeneratorJobEventHandler extends AdministrativeService
 								Integer.toString(destWidth),
 								Integer.toString(destHeight));
 						session.save();
+					} catch (Exception e) {
+						return false;
 					} finally {
 						if (tmp != null) {
 							tmp.delete();
@@ -347,6 +329,7 @@ public class ThumbnailGeneratorJobEventHandler extends AdministrativeService
 					}
 				}
 			}
+			return true;
 
 		} finally {
 			releaseAdministrativeSession(session);

@@ -43,6 +43,7 @@ import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.commons.osgi.OsgiUtil;
 import org.apache.sling.event.EventUtil;
 import org.apache.sling.event.JobProcessor;
+import org.apache.sling.event.jobs.JobUtil;
 import org.apache.sling.jcr.api.SlingRepository;
 import org.liveSense.core.AdministrativeService;
 import org.osgi.service.component.ComponentContext;
@@ -121,11 +122,11 @@ public class ThumbnailGeneratorResourceChangeListener extends AdministrativeServ
                 		}
                 	}
                 	if (foundMimeType) {
-                		log.info(">Generate thumbnail event "+EventUtil.PROPERTY_JOB_TOPIC+" "+THUMBNAIL_GENERATE_TOPIC+" for " +eventType+" "+filePath+" "+fileName);
+                		log.info(">Generate thumbnail event "+JobUtil.PROPERTY_JOB_TOPIC+" "+THUMBNAIL_GENERATE_TOPIC+" for " +eventType+" "+filePath+" "+fileName);
         	    		final Dictionary<String, Object> props = new Hashtable<String, Object>();
-        	            props.put(EventUtil.PROPERTY_JOB_TOPIC, THUMBNAIL_GENERATE_TOPIC);
+        	            props.put(JobUtil.PROPERTY_JOB_TOPIC, THUMBNAIL_GENERATE_TOPIC);
         	    		props.put("resourcePath", "/"+filePath+"/"+fileName);
-        	    		org.osgi.service.event.Event generateThumbnailJob = new org.osgi.service.event.Event(EventUtil.TOPIC_JOB, props);
+        	    		org.osgi.service.event.Event generateThumbnailJob = new org.osgi.service.event.Event(JobUtil.TOPIC_JOB, props);
         	    		eventAdmin.sendEvent(generateThumbnailJob);
                 	}
             	} catch (Exception e) {
@@ -137,9 +138,9 @@ public class ThumbnailGeneratorResourceChangeListener extends AdministrativeServ
 
     	private void removeJobEvent(String eventType, String filePath, String fileName) {
             if (!fileName.startsWith(".")) {
-        		log.info(">Remove thumbnail event "+EventUtil.PROPERTY_JOB_TOPIC+" "+THUMBNAIL_REMOVE_TOPIC+" for " +eventType+" "+filePath+" "+fileName);
+        		log.info(">Remove thumbnail event "+JobUtil.PROPERTY_JOB_TOPIC+" "+THUMBNAIL_REMOVE_TOPIC+" for " +eventType+" "+filePath+" "+fileName);
             	final Dictionary<String, Object> props = new Hashtable<String, Object>();
-	            props.put(EventUtil.PROPERTY_JOB_TOPIC, THUMBNAIL_REMOVE_TOPIC);
+	            props.put(JobUtil.PROPERTY_JOB_TOPIC, THUMBNAIL_REMOVE_TOPIC);
 	    		props.put("resourcePath", "/"+filePath+"/"+fileName);
 	    		org.osgi.service.event.Event generateThumbnailJob = new org.osgi.service.event.Event(EventUtil.TOPIC_JOB, props);
 	    		eventAdmin.sendEvent(generateThumbnailJob);
