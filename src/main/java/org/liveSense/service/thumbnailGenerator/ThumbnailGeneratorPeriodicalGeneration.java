@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 )
 
 
-public class ThumbnailGeneratorPeriodicalGeneration extends AdministrativeService implements Runnable {
+public class ThumbnailGeneratorPeriodicalGeneration implements Runnable {
 	private static final Logger log = LoggerFactory.getLogger(ThumbnailGeneratorPeriodicalGeneration.class);
 
 	
@@ -50,7 +50,9 @@ public class ThumbnailGeneratorPeriodicalGeneration extends AdministrativeServic
 		Session session = null;
 		log.info("Starting scan for images...");
 		try {
-			session = getAdministrativeSession(repository);
+			session = repository.loginAdministrative(null);
+			// TODO Searching for images and generating jobs
+			/*
 			NodeIterator nodes = session.getWorkspace().getQueryManager().createQuery("select * from [jcr:content]", Query.JCR_SQL2).execute().getNodes();
 			while (nodes.hasNext()) {
 				Node node = nodes.nextNode();
@@ -58,17 +60,15 @@ public class ThumbnailGeneratorPeriodicalGeneration extends AdministrativeServic
 					
 				}
 			}
-			
+			*/
+			if (session.hasPendingChanges()) {
+                session.save();
+			}
 			
 		} catch (RepositoryException e) {
 			log.error(e.getMessage());
 		} finally {
-			try {
-				releaseAdministrativeSession(session);
-			} catch (RepositoryException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}			
+			session.logout();
 		}
 		
 		
