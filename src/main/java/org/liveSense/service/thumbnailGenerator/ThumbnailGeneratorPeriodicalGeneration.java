@@ -6,6 +6,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.query.Query;
 
+import org.apache.felix.scr.annotations.Activate;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.ConfigurationPolicy;
 import org.apache.felix.scr.annotations.Properties;
@@ -14,6 +15,7 @@ import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.Service;
 import org.apache.sling.jcr.api.SlingRepository;
 import org.liveSense.core.AdministrativeService;
+import org.osgi.service.component.ComponentContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,17 +31,16 @@ import org.slf4j.LoggerFactory;
 				value="ThumbnailGeneratorPeriodicalGeneration"),
 		@Property(
 				name="scheduler.expression", 
-				value="0 0 * ? * * "),
-		@Property(		
-				name = "event.topics", value = {
-				ThumbnailGeneratorResourceChangeListener.THUMBNAIL_GENERATE_TOPIC,
-				ThumbnailGeneratorResourceChangeListener.THUMBNAIL_REMOVE_TOPIC })
-		}
-)
-
+				value="0 0 * ? * * ")
+})
 
 public class ThumbnailGeneratorPeriodicalGeneration implements Runnable {
 	private static final Logger log = LoggerFactory.getLogger(ThumbnailGeneratorPeriodicalGeneration.class);
+
+    @Activate
+    protected void activate(ComponentContext componentContext) throws RepositoryException {
+    	
+    }
 
 	
 	@Reference

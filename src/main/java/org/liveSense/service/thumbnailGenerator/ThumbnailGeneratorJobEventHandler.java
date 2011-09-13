@@ -51,7 +51,6 @@ import org.apache.sling.event.jobs.JobProcessor;
 import org.apache.sling.event.jobs.JobUtil;
 import org.apache.sling.jcr.api.SlingRepository;
 import org.apache.sling.jcr.resource.JcrResourceConstants;
-import org.liveSense.core.AdministrativeService;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventHandler;
@@ -69,7 +68,8 @@ import com.jhlabs.image.ScaleFilter;
 @Property(name = "event.topics", value = {
 		ThumbnailGeneratorResourceChangeListener.THUMBNAIL_GENERATE_TOPIC,
 		ThumbnailGeneratorResourceChangeListener.THUMBNAIL_REMOVE_TOPIC })
-public class ThumbnailGeneratorJobEventHandler extends AdministrativeService
+
+public class ThumbnailGeneratorJobEventHandler
 		implements JobProcessor, EventHandler {
 
 	/**
@@ -130,7 +130,7 @@ public class ThumbnailGeneratorJobEventHandler extends AdministrativeService
 
 		try {
 			String resourcePath = (String) event.getProperty("resourcePath");
-			session = getAdministrativeSession(repository);
+			session = repository.loginAdministrative(null);
 
 			Map<String, Object> authInfo = new HashMap<String, Object>();
 			authInfo.put(JcrResourceConstants.AUTHENTICATION_INFO_SESSION,
@@ -143,20 +143,24 @@ public class ThumbnailGeneratorJobEventHandler extends AdministrativeService
 				return false;
 			}
 
-			Resource res = resourceResolver.getResource(resourcePath);
-			if (ResourceUtil.isA(res, "nt:file")) {
 				if (event
 						.getTopic()
 						.equals(ThumbnailGeneratorResourceChangeListener.THUMBNAIL_REMOVE_TOPIC)) {
 					// remove
-					deleteThumbnailsForImage(resourcePath);
+					deleteThumbnailsForImage(session, resourcePath);
 				} else if (event
 						.getTopic()
 						.equals(ThumbnailGeneratorResourceChangeListener.THUMBNAIL_GENERATE_TOPIC)) {
 					// insert
-					createThumbnailsForImage(resourcePath);
+					Resource res = resourceResolver.getResource(resourcePath);
+
+					if (ResourceUtil.isA(res, "nt:file")) {
+						createThumbnailsForImage(res);
+					}
+
 				}
-			}
+			if (session != null && session.isLive() && session.hasPendingChanges())
+				session.save();
 			return true;
 		} catch (RepositoryException e) {
 			log.error("RepositoryException: " + e);
@@ -165,51 +169,32 @@ public class ThumbnailGeneratorJobEventHandler extends AdministrativeService
 			log.error("Exception: " + e);
 			return false;
 		} finally {
-			try {
-			    	if (resourceResolver != null) resourceResolver.close();
-				releaseAdministrativeSession(session);
-			} catch (RepositoryException e) {
-				log.error("Error on logout administrative session");
-			}
+		    if (resourceResolver != null) resourceResolver.close();
+			if (session != null)
+				session.logout();
 		}
 	}
 
-	public boolean createThumbnailsForImage(String path)
+	public boolean createThumbnailsForImage(Resource resource)
 			throws RepositoryException, Exception {
-		Session session = null;
 		try {
-			log.info("Generating thumbnail for image "+path);
-			session = getAdministrativeSession(repository);
-			String resourceName = path.substring(path.lastIndexOf("/") + 1);
-
-			Map<String, Object> authInfo = new HashMap<String, Object>();
-			authInfo.put(JcrResourceConstants.AUTHENTICATION_INFO_SESSION,
-					session);
-			ResourceResolver resourceResolver = null;
-			try {
-				resourceResolver = resourceResolverFactory
-						.getResourceResolver(authInfo);
-			} catch (LoginException e) {
-				log.error("Authentication error");
-				throw new RepositoryException();
-			}
-
-			Resource res = resourceResolver.getResource(path);
+			log.info("Generating thumbnail for image "+resource.getPath());
 			Node node = null;
-			if (res != null) node = res.adaptTo(Node.class);
+			if (resource != null) node = resource.adaptTo(Node.class);
 			if (node == null) return false;
 
 			// if thumbnail folder does not exists we generate it
 			if (!node.getParent().hasNode(thumbnailFolder)) {
 				node.getParent().addNode(thumbnailFolder, "thumbnail:thumbnailFolder");
 			}
+			
 			// session.save();
 			Node thumbnailFolderNode = node.getParent()
 					.getNode(thumbnailFolder);
 
 			// Removing thumbnail images
 			NodeIterator iter = thumbnailFolderNode
-					.getNodes(resourceName + "*");
+					.getNodes(resource.getName() + "*");
 			while (iter.hasNext()) {
 				Node rm = iter.nextNode();
 				if (rm.isNodeType("thumbnail:thumbnailImage") && 
@@ -230,7 +215,7 @@ public class ThumbnailGeneratorJobEventHandler extends AdministrativeService
 				width = Integer.parseInt(reso[0]);
 				height = Integer.parseInt(reso[1]);
 
-				String thumbnailName = res.getName() + "." + width + "."
+				String thumbnailName = resource.getName() + "." + width + "."
 				+ height + ".jpg";
 				
 				if (!thumbnailFolderNode.hasNode(thumbnailName)) {
@@ -262,7 +247,7 @@ public class ThumbnailGeneratorJobEventHandler extends AdministrativeService
 	
 					ScaleFilter filter = new ScaleFilter(destWidth, destHeight);
 					filter.filter(src, dest);
-					final File tmp = File.createTempFile(getClass().getSimpleName(), resourceName+"."+Calendar.getInstance().getTimeInMillis());
+					final File tmp = File.createTempFile(getClass().getSimpleName(), resource.getName()+"."+Calendar.getInstance().getTimeInMillis());
 					try {
 						FileOutputStream outs = new FileOutputStream(tmp);
 						ImageIO.write(dest, "jpg", outs);
@@ -310,7 +295,7 @@ public class ThumbnailGeneratorJobEventHandler extends AdministrativeService
 						thumbnail.getNode("jcr:content").setProperty("jcr:lastModified",
 								Calendar.getInstance());
 						thumbnail.getNode("jcr:content").setProperty("jcr:mimeType", "image/jpg");
-						thumbnail.setProperty("originalNodePath", path);
+						thumbnail.setProperty("originalNodePath", resource.getPath());
 						thumbnail.setProperty("originalNodeLastModified", node
 								.getNode("jcr:content").getProperty("jcr:lastModified").getDate());					
 						thumbnail.setProperty("width", destWidth);
@@ -319,7 +304,7 @@ public class ThumbnailGeneratorJobEventHandler extends AdministrativeService
 								+ " Width: {} Height: {} ",
 								Integer.toString(destWidth),
 								Integer.toString(destHeight));
-						session.save();
+						//session.save();
 					} catch (Exception e) {
 						return false;
 					} finally {
@@ -332,47 +317,32 @@ public class ThumbnailGeneratorJobEventHandler extends AdministrativeService
 			return true;
 
 		} finally {
-			releaseAdministrativeSession(session);
 		}
 	}
 
-	public void deleteThumbnailsForImage(String path)
+	public void deleteThumbnailsForImage(Session session, String resourcePath)
 			throws RepositoryException, Exception {
-		Session session = null;
 		try {
-			session = getAdministrativeSession(repository);
-			String resourceName = path.substring(path.lastIndexOf("/") + 1);
 			
-			
-			String parentFolder = path.substring(0, path.lastIndexOf("/"));
-
-			Map<String, Object> authInfo = new HashMap<String, Object>();
-			authInfo.put(JcrResourceConstants.AUTHENTICATION_INFO_SESSION,
-					session);
-			ResourceResolver resourceResolver = null;
-			try {
-				resourceResolver = resourceResolverFactory
-						.getResourceResolver(authInfo);
-			} catch (LoginException e) {
-				log.error("Authentication error");
-				throw new RepositoryException();
-			}
-			Resource res = null;
-			Node node = null;
-			try {
-				res = resourceResolver.getResource(parentFolder);
-			} finally {
-			}
-			
-			if (res != null) node = res.adaptTo(Node.class);
-
 			// if thumbnail folder not exists we deleting nodes from it
+			if (resourcePath.startsWith("/")) resourcePath = resourcePath.substring(1);
+			if (resourcePath.lastIndexOf("/")<=0) return;
+			String parentPath = resourcePath.substring(0, resourcePath.lastIndexOf("/"));
+			String imageName = resourcePath.substring(resourcePath.lastIndexOf("/")+1, resourcePath.length()-1);
+
+			log.info("Delete thumbnail for image "+imageName+" at "+parentPath);
+			
+			Node node = null;
+			if (session.getRootNode().hasNode(parentPath)) {
+				node = session.getRootNode().getNode(parentPath);
+			}
+			
 			if (node != null && node.hasNode(thumbnailFolder)) {
-				Node thumbnailFolderNode = node.getParent().getNode(
+				Node thumbnailFolderNode = node.getNode(
 						thumbnailFolder);
 
 				// Removing thumbnail images
-				NodeIterator iter = thumbnailFolderNode.getNodes(resourceName
+				NodeIterator iter = thumbnailFolderNode.getNodes(imageName
 						+ "*");
 				while (iter.hasNext()) {
 					Node rm = iter.nextNode();
@@ -380,9 +350,9 @@ public class ThumbnailGeneratorJobEventHandler extends AdministrativeService
 					rm.remove();
 				}
 			}
-			session.save();
+		} catch (Exception e) {
+			log.error("deleteThumbnailsForImage",e);
 		} finally {
-			releaseAdministrativeSession(session);
 		}
 	}
 
