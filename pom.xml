@@ -29,7 +29,6 @@
       <url>https://github.com/liveSense/org.liveSense.service.thumbnailGenerator</url>
   </scm>  
 
-    <groupId>org.liveSense</groupId>
     <artifactId>org.liveSense.service.thumbnailGenerator</artifactId>
     <packaging>bundle</packaging>
     <version>1.0.1-SNAPSHOT</version>
