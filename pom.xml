@@ -32,7 +32,7 @@
     <artifactId>org.liveSense.service.thumbnailGenerator</artifactId>
     <packaging>bundle</packaging>
     <version>1.0.1-SNAPSHOT</version>
-    <name>liveSense Thumbnail generator service</name>
+    <name>liveSense :: Service :: Thumbnail generator service</name>
     <description>liveSense Thumbnail generator service and observer</description>
 
     <build>
