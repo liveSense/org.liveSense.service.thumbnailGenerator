@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Hashtable;
 
-import javax.jcr.Node;
 import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -37,18 +36,16 @@ import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.ConfigurationPolicy;
 import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Reference;
-import org.apache.felix.scr.annotations.Service;
-import org.apache.sling.api.SlingConstants;
+import org.apache.felix.scr.annotations.ReferenceCardinality;
+import org.apache.felix.scr.annotations.ReferencePolicy;
 import org.apache.sling.api.resource.ResourceResolverFactory;
-import org.apache.sling.commons.osgi.OsgiUtil;
+import org.apache.sling.commons.osgi.PropertiesUtil;
 import org.apache.sling.event.EventUtil;
-import org.apache.sling.event.JobProcessor;
 import org.apache.sling.event.jobs.JobUtil;
 import org.apache.sling.jcr.api.SlingRepository;
 import org.liveSense.core.AdministrativeService;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.event.EventAdmin;
-import org.osgi.service.event.EventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,11 +81,11 @@ public class ThumbnailGeneratorResourceChangeListener extends AdministrativeServ
     public static final String THUMBNAIL_GENERATE_TOPIC = "org/liveSense/thumbnail/generate";
     public static final String THUMBNAIL_REMOVE_TOPIC = "org/liveSense/thumbnail/remove";
  
-    @Reference
+	@Reference(cardinality=ReferenceCardinality.MANDATORY_UNARY, policy=ReferencePolicy.STATIC)
     private SlingRepository repository;
-    @Reference
+	@Reference(cardinality=ReferenceCardinality.MANDATORY_UNARY, policy=ReferencePolicy.DYNAMIC)
     private EventAdmin eventAdmin;
-    @Reference
+	@Reference(cardinality=ReferenceCardinality.MANDATORY_UNARY, policy=ReferencePolicy.DYNAMIC)
     ResourceResolverFactory resourceResolverFactory;
     
     @Property(name=PARAM_CONTENT_PATHES, 
@@ -105,9 +102,8 @@ public class ThumbnailGeneratorResourceChangeListener extends AdministrativeServ
 			NODE_TYPE_NT_FILE })
 	private String[] supportedNodeTypes = DEFAULT_NODE_TYPES;
 
+	private Session session;
 	
-    Session session;
-
     class PathEventListener implements EventListener {
 
     	private void generateJobEvent(String eventType, String filePath, String fileName) {
@@ -147,7 +143,8 @@ public class ThumbnailGeneratorResourceChangeListener extends AdministrativeServ
             }   		
     	}
     	
-        public void onEvent(EventIterator it) {
+        @Override
+		public void onEvent(EventIterator it) {
             while (it.hasNext()) {
                 Event event = it.nextEvent();
                 try {
@@ -194,7 +191,7 @@ public class ThumbnailGeneratorResourceChangeListener extends AdministrativeServ
         }
     }
     
-    private ArrayList<PathEventListener> eventListeners = new ArrayList<PathEventListener>();
+    private final ArrayList<PathEventListener> eventListeners = new ArrayList<PathEventListener>();
     
     private ObservationManager observationManager;
 
@@ -206,11 +203,11 @@ public class ThumbnailGeneratorResourceChangeListener extends AdministrativeServ
      */
     protected void activate(ComponentContext componentContext) throws RepositoryException {
         // Setting up contentPathes
-        contentPathes = OsgiUtil.toStringArray(componentContext.getProperties().get(PARAM_CONTENT_PATHES), DEFAULT_CONTENT_PATHES);
+        contentPathes = PropertiesUtil.toStringArray(componentContext.getProperties().get(PARAM_CONTENT_PATHES), DEFAULT_CONTENT_PATHES);
         // Setting up supportedMimeTypes
-        supportedMimeTypes = OsgiUtil.toStringArray(componentContext.getProperties().get(PARAM_SUPPORTED_MIME_TYPES), DEFAULT_SUPPORTED_MIME_TYPES);
+        supportedMimeTypes = PropertiesUtil.toStringArray(componentContext.getProperties().get(PARAM_SUPPORTED_MIME_TYPES), DEFAULT_SUPPORTED_MIME_TYPES);
         // Setting up supported node types
-        supportedNodeTypes = OsgiUtil.toStringArray(componentContext.getProperties().get(PARAM_SUPPORTED_NODE_TYPES), DEFAULT_NODE_TYPES);
+        supportedNodeTypes = PropertiesUtil.toStringArray(componentContext.getProperties().get(PARAM_SUPPORTED_NODE_TYPES), DEFAULT_NODE_TYPES);
     
         session = getAdministrativeSession(repository);
         if (repository.getDescriptor(Repository.OPTION_OBSERVATION_SUPPORTED).equals("true")) {

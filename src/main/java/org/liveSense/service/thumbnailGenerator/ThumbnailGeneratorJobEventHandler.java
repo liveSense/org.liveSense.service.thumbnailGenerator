@@ -39,6 +39,8 @@ import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.ConfigurationPolicy;
 import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Reference;
+import org.apache.felix.scr.annotations.ReferenceCardinality;
+import org.apache.felix.scr.annotations.ReferencePolicy;
 import org.apache.felix.scr.annotations.Service;
 import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.Resource;
@@ -95,10 +97,10 @@ public class ThumbnailGeneratorJobEventHandler
 	@Property(name = PARAM_THUMBNAIL_FOLDER, label = "%folder", description = "%folder.description", value = DEFAULT_THUMBNAIL_FOLDER)
 	private String thumbnailFolder = DEFAULT_THUMBNAIL_FOLDER;
 
-	@Reference
+	@Reference(cardinality=ReferenceCardinality.MANDATORY_UNARY, policy=ReferencePolicy.DYNAMIC)
 	SlingRepository repository;
 
-	@Reference
+	@Reference(cardinality=ReferenceCardinality.MANDATORY_UNARY, policy=ReferencePolicy.DYNAMIC)
 	ResourceResolverFactory resourceResolverFactory;
 
 	/**
@@ -118,12 +120,14 @@ public class ThumbnailGeneratorJobEventHandler
 				PARAM_THUMBNAIL_FOLDER);
 	}
 
+	@Override
 	public void handleEvent(Event event) {
 		if (EventUtil.isLocal(event)) {
 			JobUtil.processJob(event, this);
 		}
 	}
 
+	@Override
 	public boolean process(Event event) {
 		Session session = null;
 		ResourceResolver resourceResolver = null;
@@ -261,6 +265,7 @@ public class ThumbnailGeneratorJobEventHandler
 								"jcr:data", new Binary() {
 									InputStream is;
 		
+									@Override
 									public InputStream getStream()
 											throws RepositoryException {
 										try {
@@ -271,11 +276,13 @@ public class ThumbnailGeneratorJobEventHandler
 										return is;
 									}
 		
+									@Override
 									public int read(byte[] b, long position)
 											throws IOException, RepositoryException {
 										return is.read(b, (int) position, 4096);
 									}
 		
+									@Override
 									public long getSize() throws RepositoryException {
 										try {
 											return is.available();
@@ -284,6 +291,7 @@ public class ThumbnailGeneratorJobEventHandler
 										}
 									}
 		
+									@Override
 									public void dispose() {
 										try {
 											is.close();
