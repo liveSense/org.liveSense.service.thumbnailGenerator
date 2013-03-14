@@ -16,7 +16,6 @@ import org.apache.felix.scr.annotations.ReferenceCardinality;
 import org.apache.felix.scr.annotations.ReferencePolicy;
 import org.apache.felix.scr.annotations.Service;
 import org.apache.sling.jcr.api.SlingRepository;
-import org.liveSense.core.AdministrativeService;
 import org.osgi.service.component.ComponentContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,10 +28,10 @@ import org.slf4j.LoggerFactory;
 @Service(value=java.lang.Runnable.class)
 @Properties(value = {
 		@Property(
-				name="scheduler.name", 
+				name="scheduler.name",
 				value="ThumbnailGeneratorPeriodicalGeneration"),
 		@Property(
-				name="scheduler.expression", 
+				name="scheduler.expression",
 				value="0 0 * ? * * ")
 })
 
@@ -41,13 +40,13 @@ public class ThumbnailGeneratorPeriodicalGeneration implements Runnable {
 
     @Activate
     protected void activate(ComponentContext componentContext) throws RepositoryException {
-    	
+
     }
 
-	
+
 	@Reference(cardinality=ReferenceCardinality.MANDATORY_UNARY, policy=ReferencePolicy.DYNAMIC)
 	SlingRepository repository;
-		
+
 	public void run() {
 		// Scanning folders for images
 		Session session = null;
@@ -60,21 +59,21 @@ public class ThumbnailGeneratorPeriodicalGeneration implements Runnable {
 			while (nodes.hasNext()) {
 				Node node = nodes.nextNode();
 				if (node.getParent().getPrimaryNodeType().getName().equals("thumbnail:thumbnailImage")) {
-					
+
 				}
 			}
 			*/
 			if (session.hasPendingChanges()) {
                 session.save();
 			}
-			
+
 		} catch (RepositoryException e) {
 			log.error(e.getMessage());
 		} finally {
 			session.logout();
 		}
-		
-		
+
+
 	}
 
 }

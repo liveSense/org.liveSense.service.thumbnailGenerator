@@ -43,7 +43,6 @@ import org.apache.sling.commons.osgi.PropertiesUtil;
 import org.apache.sling.event.EventUtil;
 import org.apache.sling.event.jobs.JobUtil;
 import org.apache.sling.jcr.api.SlingRepository;
-import org.liveSense.core.AdministrativeService;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.event.EventAdmin;
 import org.slf4j.Logger;
@@ -60,40 +59,40 @@ import org.slf4j.LoggerFactory;
         metatype=true,
         policy=ConfigurationPolicy.OPTIONAL)
 
-public class ThumbnailGeneratorResourceChangeListener extends AdministrativeService {
+public class ThumbnailGeneratorResourceChangeListener {
     private static final Logger log = LoggerFactory.getLogger(ThumbnailGeneratorResourceChangeListener.class);
-			
+
     public static final String PARAM_CONTENT_PATHES = "contentPathes";
     public static final String CONTENT_PATH_SITES = "/sites";
     public static final String CONTENT_PATH_USERS = "/users";
     public static final String[] DEFAULT_CONTENT_PATHES = new String[] {CONTENT_PATH_SITES, CONTENT_PATH_USERS};
-	
+
     public static final String PARAM_SUPPORTED_MIME_TYPES = "supportedMimeTypes";
     public static final String MIME_TYPE_IMAGE_JPEG = "image/jpeg";
     public static final String MIME_TYPE_IMAGE_GIF = "image/gif";
-    public static final String MIME_TYPE_IMAGE_PNG = "image/png";	    
+    public static final String MIME_TYPE_IMAGE_PNG = "image/png";
     public static final String[] DEFAULT_SUPPORTED_MIME_TYPES = {MIME_TYPE_IMAGE_JPEG, MIME_TYPE_IMAGE_GIF, MIME_TYPE_IMAGE_PNG};
-	
+
     public static final String PARAM_SUPPORTED_NODE_TYPES = "supportedNodeTypes";
-    public static final String NODE_TYPE_NT_FILE = "nt:file";	        
+    public static final String NODE_TYPE_NT_FILE = "nt:file";
     public static final String[] DEFAULT_NODE_TYPES = new String[]{NODE_TYPE_NT_FILE};
-    
+
     public static final String THUMBNAIL_GENERATE_TOPIC = "org/liveSense/thumbnail/generate";
     public static final String THUMBNAIL_REMOVE_TOPIC = "org/liveSense/thumbnail/remove";
- 
+
 	@Reference(cardinality=ReferenceCardinality.MANDATORY_UNARY, policy=ReferencePolicy.STATIC)
     private SlingRepository repository;
 	@Reference(cardinality=ReferenceCardinality.MANDATORY_UNARY, policy=ReferencePolicy.DYNAMIC)
     private EventAdmin eventAdmin;
 	@Reference(cardinality=ReferenceCardinality.MANDATORY_UNARY, policy=ReferencePolicy.DYNAMIC)
     ResourceResolverFactory resourceResolverFactory;
-    
-    @Property(name=PARAM_CONTENT_PATHES, 
-    		label="%contentPathes.name", 
-    		description="%contentPathes.description", 
+
+    @Property(name=PARAM_CONTENT_PATHES,
+    		label="%contentPathes.name",
+    		description="%contentPathes.description",
     		value={CONTENT_PATH_SITES, CONTENT_PATH_USERS})
     private String[] contentPathes = DEFAULT_CONTENT_PATHES;
-    
+
 	@Property(name = PARAM_SUPPORTED_MIME_TYPES, label = "%supported.mimeTypes", description = "%supported.mimeTypes.description", value = {
 			MIME_TYPE_IMAGE_JPEG, MIME_TYPE_IMAGE_GIF, MIME_TYPE_IMAGE_PNG })
 	private String[] supportedMimeTypes = DEFAULT_SUPPORTED_MIME_TYPES;
@@ -103,7 +102,7 @@ public class ThumbnailGeneratorResourceChangeListener extends AdministrativeServ
 	private String[] supportedNodeTypes = DEFAULT_NODE_TYPES;
 
 	private Session session;
-	
+
     class PathEventListener implements EventListener {
 
     	private void generateJobEvent(String eventType, String filePath, String fileName) {
@@ -129,7 +128,7 @@ public class ThumbnailGeneratorResourceChangeListener extends AdministrativeServ
             		log.error("Error resolving mimeType: "+filePath+"/"+fileName);
 				}
             }
-    		
+
     	}
 
     	private void removeJobEvent(String eventType, String filePath, String fileName) {
@@ -140,9 +139,9 @@ public class ThumbnailGeneratorResourceChangeListener extends AdministrativeServ
 	    		props.put("resourcePath", "/"+filePath+"/"+fileName);
 	    		org.osgi.service.event.Event generateThumbnailJob = new org.osgi.service.event.Event(EventUtil.TOPIC_JOB, props);
 	    		eventAdmin.sendEvent(generateThumbnailJob);
-            }   		
+            }
     	}
-    	
+
         @Override
 		public void onEvent(EventIterator it) {
             while (it.hasNext()) {
@@ -190,9 +189,9 @@ public class ThumbnailGeneratorResourceChangeListener extends AdministrativeServ
             }
         }
     }
-    
+
     private final ArrayList<PathEventListener> eventListeners = new ArrayList<PathEventListener>();
-    
+
     private ObservationManager observationManager;
 
     /**
@@ -208,8 +207,8 @@ public class ThumbnailGeneratorResourceChangeListener extends AdministrativeServ
         supportedMimeTypes = PropertiesUtil.toStringArray(componentContext.getProperties().get(PARAM_SUPPORTED_MIME_TYPES), DEFAULT_SUPPORTED_MIME_TYPES);
         // Setting up supported node types
         supportedNodeTypes = PropertiesUtil.toStringArray(componentContext.getProperties().get(PARAM_SUPPORTED_NODE_TYPES), DEFAULT_NODE_TYPES);
-    
-        session = getAdministrativeSession(repository);
+
+        session = repository.loginAdministrative(null);
         if (repository.getDescriptor(Repository.OPTION_OBSERVATION_SUPPORTED).equals("true")) {
             observationManager = session.getWorkspace().getObservationManager();
             //String[] types = {"nt:resource"};
@@ -226,15 +225,16 @@ public class ThumbnailGeneratorResourceChangeListener extends AdministrativeServ
             }
         }
     }
-  
-    @Override
+
     public void deactivate(ComponentContext componentContext) throws RepositoryException {
-        super.deactivate(componentContext);
+    	if (session != null && session.isLive()) {
+    		session.logout();
+    	}
         if (observationManager != null) {
             for (PathEventListener listener : eventListeners) {
                 observationManager.removeEventListener(listener);
             }
         }
-    }    
+    }
 }
 
