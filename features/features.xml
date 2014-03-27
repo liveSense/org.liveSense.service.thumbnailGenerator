@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?><features name="liveSense-${liveSense.version}-service-thumbnailGenerator" xmlns="http://karaf.apache.org/xmlns/features/v1.0.0">
 	<feature name="liveSense-service-thumbnailGenerator" version="${liveSense.service.thumbnailGenerator.version}" description="liveSense service thumbnailGenerator">
         <feature>liveSense-core-base</feature>
-        <feature>liveSense-core-sling-extension-event</feature>
+        <feature>sling-extension-event</feature>
         <bundle>mvn:com.github.livesense/org.liveSense.service.thumbnailGenerator/${liveSense.service.thumbnailGenerator.version}</bundle>
 	</feature>
 </features>
