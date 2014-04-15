@@ -21,10 +21,11 @@
   <parent>
       <groupId>com.github.livesense</groupId>
       <artifactId>org.liveSense.parent</artifactId>
-      <version>1.0.3-SNAPSHOT</version>
+      <version>1.0.3</version>
 		<relativePath>..</relativePath>
   </parent>
-	<scm>
+  <version>1.0.3-SNAPSHOT</version>
+    <scm>
 		<connection>scm:git:https://github.com/liveSense/org.liveSense.service.thumbnailGenerator.git</connection>
 		<developerConnection>scm:git:https://github.com/liveSense/org.liveSense.service.thumbnailGenerator.git</developerConnection>
 		<url>https://github.com/liveSense/org.liveSense.service.thumbnailGenerator</url>
