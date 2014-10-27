@@ -6,6 +6,4 @@
 /.project
 /.classpath
 /nbactions.xml
-/target
-/target
-/target
+*.iml
